@@ -1,0 +1,260 @@
+/* 文件预览模态框 */
+.file-preview-modal .ant-modal-body {
+  padding: 24px;
+  max-height: 70vh;
+  overflow-y: auto;
+}
+
+.file-preview-content {
+  min-height: 400px;
+}
+
+/* PDF 预览 */
+.file-preview-pdf {
+  width: 100%;
+}
+
+.pdf-viewer {
+  border: 1px solid #d9d9d9;
+  border-radius: 8px;
+  overflow: hidden;
+  background: #f5f5f5;
+}
+
+/* 图片预览 */
+.file-preview-image {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+}
+
+.image-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 400px;
+  max-height: 600px;
+  overflow: auto;
+  background: #fafafa;
+  border: 1px solid #d9d9d9;
+  border-radius: 8px;
+  padding: 20px;
+}
+
+.image-controls {
+  display: flex;
+  justify-content: center;
+  padding: 12px;
+  background: #f5f5f5;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+/* Markdown 预览 */
+.file-preview-markdown {
+  padding: 24px;
+  background: #fff;
+  border: 1px solid #d9d9d9;
+  border-radius: 8px;
+  min-height: 400px;
+  max-height: 600px;
+  overflow-y: auto;
+}
+
+.file-preview-markdown h1,
+.file-preview-markdown h2,
+.file-preview-markdown h3,
+.file-preview-markdown h4,
+.file-preview-markdown h5,
+.file-preview-markdown h6 {
+  margin-top: 24px;
+  margin-bottom: 16px;
+  font-weight: 600;
+  line-height: 1.25;
+  border-bottom: 1px solid #eaecef;
+  padding-bottom: 8px;
+}
+
+.file-preview-markdown h1 {
+  font-size: 2em;
+}
+
+.file-preview-markdown h2 {
+  font-size: 1.5em;
+}
+
+.file-preview-markdown h3 {
+  font-size: 1.25em;
+}
+
+.file-preview-markdown p {
+  margin-bottom: 16px;
+  line-height: 1.6;
+}
+
+.file-preview-markdown code {
+  padding: 2px 6px;
+  background: #f6f8fa;
+  border-radius: 3px;
+  font-family: 'SFMono-Regular', 'Consolas', 'Liberation Mono', 'Menlo', monospace;
+  font-size: 0.9em;
+}
+
+.file-preview-markdown pre {
+  padding: 16px;
+  background: #f6f8fa;
+  border-radius: 6px;
+  overflow-x: auto;
+  margin-bottom: 16px;
+}
+
+.file-preview-markdown pre code {
+  padding: 0;
+  background: transparent;
+}
+
+.file-preview-markdown ul,
+.file-preview-markdown ol {
+  margin-bottom: 16px;
+  padding-left: 2em;
+}
+
+.file-preview-markdown li {
+  margin-bottom: 4px;
+}
+
+.file-preview-markdown blockquote {
+  padding: 0 1em;
+  color: #6a737d;
+  border-left: 4px solid #dfe2e5;
+  margin-bottom: 16px;
+}
+
+.file-preview-markdown table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: 16px;
+}
+
+.file-preview-markdown th,
+.file-preview-markdown td {
+  padding: 8px 12px;
+  border: 1px solid #dfe2e5;
+}
+
+.file-preview-markdown th {
+  background: #f6f8fa;
+  font-weight: 600;
+}
+
+.file-preview-markdown a {
+  color: #0366d6;
+  text-decoration: none;
+}
+
+.file-preview-markdown a:hover {
+  text-decoration: underline;
+}
+
+.file-preview-markdown img {
+  max-width: 100%;
+  border-radius: 6px;
+  margin: 16px 0;
+}
+
+/* 文本预览 */
+.file-preview-text {
+  padding: 24px;
+  background: #f6f8fa;
+  border: 1px solid #d9d9d9;
+  border-radius: 8px;
+  min-height: 400px;
+  max-height: 600px;
+  overflow: auto;
+  font-family: 'SFMono-Regular', 'Consolas', 'Liberation Mono', 'Menlo', monospace;
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+/* 不支持的文件类型 */
+.file-preview-unsupported {
+  min-height: 400px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #fafafa;
+  border: 1px solid #d9d9d9;
+  border-radius: 8px;
+}
+
+/* 响应式设计 */
+@media (max-width: 768px) {
+  .file-preview-modal .ant-modal {
+    max-width: 95vw !important;
+    margin: 8px;
+  }
+
+  .file-preview-modal .ant-modal-body {
+    padding: 16px;
+    max-height: 60vh;
+  }
+
+  .image-container {
+    max-height: 400px;
+  }
+
+  .image-controls {
+    flex-wrap: wrap;
+  }
+
+  .file-preview-markdown,
+  .file-preview-text {
+    max-height: 400px;
+    padding: 16px;
+  }
+}
+
+/* 代码高亮滚动条优化 */
+.file-preview-markdown pre::-webkit-scrollbar,
+.file-preview-text::-webkit-scrollbar {
+  height: 8px;
+  width: 8px;
+}
+
+.file-preview-markdown pre::-webkit-scrollbar-thumb,
+.file-preview-text::-webkit-scrollbar-thumb {
+  background: #d9d9d9;
+  border-radius: 4px;
+}
+
+.file-preview-markdown pre::-webkit-scrollbar-thumb:hover,
+.file-preview-text::-webkit-scrollbar-thumb:hover {
+  background: #bfbfbf;
+}
+
+/* 加载状态 */
+.file-preview-loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 400px;
+  gap: 16px;
+}
+
+/* 动画效果 */
+.file-preview-content {
+  animation: fadeIn 0.3s ease-in;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}

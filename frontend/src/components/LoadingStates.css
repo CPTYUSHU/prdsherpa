@@ -1,0 +1,217 @@
+/* AI 思考动画 */
+.ai-thinking {
+  display: inline-flex;
+  align-items: center;
+  padding: 12px 16px;
+  background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+.ai-thinking-small {
+  padding: 8px 12px;
+}
+
+.ai-thinking-large {
+  padding: 16px 24px;
+}
+
+.ai-thinking-container {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.ai-thinking-icon {
+  font-size: 24px;
+  color: #1890ff;
+  animation: ai-pulse 2s ease-in-out infinite;
+}
+
+.ai-thinking-small .ai-thinking-icon {
+  font-size: 18px;
+}
+
+.ai-thinking-large .ai-thinking-icon {
+  font-size: 32px;
+}
+
+.ai-thinking-content {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.ai-thinking-dots {
+  display: flex;
+  gap: 4px;
+}
+
+.ai-thinking-dots span {
+  width: 6px;
+  height: 6px;
+  background-color: #1890ff;
+  border-radius: 50%;
+  animation: ai-bounce 1.4s infinite ease-in-out both;
+}
+
+.ai-thinking-dots span:nth-child(1) {
+  animation-delay: -0.32s;
+}
+
+.ai-thinking-dots span:nth-child(2) {
+  animation-delay: -0.16s;
+}
+
+.ai-thinking-text {
+  font-size: 14px;
+  color: #595959;
+}
+
+@keyframes ai-pulse {
+  0%, 100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.7;
+    transform: scale(0.95);
+  }
+}
+
+@keyframes ai-bounce {
+  0%, 80%, 100% {
+    transform: scale(0);
+    opacity: 0.5;
+  }
+  40% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+/* 文件分析进度 */
+.file-analysis-progress {
+  padding: 12px;
+  background: #fafafa;
+  border-radius: 8px;
+  border: 1px solid #f0f0f0;
+  transition: all 0.3s ease;
+}
+
+.file-analysis-progress:hover {
+  background: #f5f5f5;
+  border-color: #d9d9d9;
+}
+
+/* 知识库构建进度 */
+.kb-progress {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  border: none;
+  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+}
+
+.kb-progress .ant-card-body {
+  padding: 20px;
+}
+
+.kb-progress .ant-progress-bg {
+  background: linear-gradient(90deg, #4facfe 0%, #00f2fe 100%);
+}
+
+.kb-progress-stages {
+  display: flex;
+  justify-content: center;
+  margin-top: 16px;
+  padding-top: 16px;
+  border-top: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.kb-progress-stage {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  position: relative;
+  padding: 0 12px;
+}
+
+.kb-progress-stage:not(:last-child)::after {
+  content: '';
+  position: absolute;
+  top: 5px;
+  right: -12px;
+  width: 24px;
+  height: 2px;
+  background: rgba(255, 255, 255, 0.3);
+}
+
+.kb-progress-stage.completed::after {
+  background: rgba(135, 208, 104, 0.6);
+}
+
+.kb-progress-stage-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.3);
+  border: 2px solid rgba(255, 255, 255, 0.5);
+  transition: all 0.3s ease;
+}
+
+.kb-progress-stage.completed .kb-progress-stage-dot {
+  background: #87d068;
+  border-color: #87d068;
+  box-shadow: 0 0 8px rgba(135, 208, 104, 0.6);
+}
+
+.kb-progress-stage.current .kb-progress-stage-dot {
+  background: #4facfe;
+  border-color: #4facfe;
+  box-shadow: 0 0 12px rgba(79, 172, 254, 0.8);
+  animation: kb-pulse 1.5s ease-in-out infinite;
+}
+
+@keyframes kb-pulse {
+  0%, 100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.2);
+  }
+}
+
+/* 全屏加载遮罩 */
+.full-page-loading {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+}
+
+.full-page-loading-content {
+  text-align: center;
+  padding: 40px;
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+}
+
+/* 响应式调整 */
+@media (max-width: 768px) {
+  .kb-progress-stages {
+    overflow-x: auto;
+  }
+
+  .kb-progress-stage {
+    min-width: 60px;
+  }
+}

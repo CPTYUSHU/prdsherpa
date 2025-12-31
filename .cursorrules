@@ -1,0 +1,201 @@
+# Instructions
+
+During your interaction with the user, if you find anything reusable in this project (e.g. version of a library, model name), especially about a fix to a mistake you made or a correction you received, you should take note in the `Lessons` section in the `.cursorrules` file so you will not make the same mistake again. 
+
+You should also use the `.cursorrules` file as a Scratchpad to organize your thoughts. Especially when you receive a new task, you should first review the content of the Scratchpad, clear old different task if necessary, first explain the task, and plan the steps you need to take to complete the task. You can use todo markers to indicate the progress, e.g.
+[X] Task 1
+[ ] Task 2
+
+Also update the progress of the task in the Scratchpad when you finish a subtask.
+Especially when you finished a milestone, it will help to improve your depth of task accomplishment to use the Scratchpad to reflect and plan.
+The goal is to help you maintain a big picture as well as the progress of the task. Always refer to the Scratchpad when you plan the next step.
+
+# Tools
+
+Note all the tools are in python3. So in the case you need to do batch processing, you can always consult the python files and write your own script.
+
+[NOTE TO CURSOR: Since no API key is configured, please ignore both the Screenshot Verification and LLM sections below.]
+[NOTE TO USER: If you have configured or plan to configure an API key in the future, simply delete these two notice lines to enable these features.]
+
+## Screenshot Verification
+
+The screenshot verification workflow allows you to capture screenshots of web pages and verify their appearance using LLMs. The following tools are available:
+
+1. Screenshot Capture:
+```bash
+venv/bin/python3 tools/screenshot_utils.py URL [--output OUTPUT] [--width WIDTH] [--height HEIGHT]
+```
+
+2. LLM Verification with Images:
+```bash
+venv/bin/python3 tools/llm_api.py --prompt "Your verification question" --provider {openai|anthropic} --image path/to/screenshot.png
+```
+
+Example workflow:
+```python
+from screenshot_utils import take_screenshot_sync
+from llm_api import query_llm
+
+# Take a screenshot
+
+screenshot_path = take_screenshot_sync('https://example.com', 'screenshot.png')
+
+# Verify with LLM
+
+response = query_llm(
+    "What is the background color and title of this webpage?",
+    provider="openai",  # or "anthropic"
+    image_path=screenshot_path
+)
+print(response)
+```
+
+## LLM
+
+You always have an LLM at your side to help you with the task. For simple tasks, you could invoke the LLM by running the following command:
+```
+venv/bin/python3 ./tools/llm_api.py --prompt "What is the capital of France?" --provider "anthropic"
+```
+
+The LLM API supports multiple providers:
+- OpenAI (default, model: gpt-4o)
+- Azure OpenAI (model: configured via AZURE_OPENAI_MODEL_DEPLOYMENT in .env file, defaults to gpt-4o-ms)
+- DeepSeek (model: deepseek-chat)
+- Anthropic (model: claude-3-sonnet-20240229)
+- Gemini (model: gemini-pro)
+- Local LLM (model: Qwen/Qwen2.5-32B-Instruct-AWQ)
+
+But usually it's a better idea to check the content of the file and use the APIs in the `tools/llm_api.py` file to invoke the LLM if needed.
+
+## Web browser
+
+You could use the `tools/web_scraper.py` file to scrape the web.
+```bash
+venv/bin/python3 ./tools/web_scraper.py --max-concurrent 3 URL1 URL2 URL3
+```
+This will output the content of the web pages.
+
+## Search engine
+
+You could use the `tools/search_engine.py` file to search the web.
+```bash
+venv/bin/python3 ./tools/search_engine.py "your search keywords"
+```
+This will output the search results in the following format:
+```
+URL: https://example.com
+Title: This is the title of the search result
+Snippet: This is a snippet of the search result
+```
+If needed, you can further use the `web_scraper.py` file to scrape the web page content.
+
+# Lessons
+
+## User Specified Lessons
+
+- You have a python venv in ./venv. Always use (activate) it when doing python development. First, to check whether 'uv' is available, use `which uv`. If that's the case, first activate the venv, and then use `uv pip install` to install packages. Otherwise, fall back to `pip`.
+- Include info useful for debugging in the program output.
+- Read the file before you try to edit it.
+- Due to Cursor's limit, when you use `git` and `gh` and need to submit a multiline commit message, first write the message in a file, and then use `git commit -F <filename>` or similar command to commit. And then remove the file. Include "[Cursor] " in the commit message and PR title.
+
+## Cursor learned
+
+- For search results, ensure proper handling of different character encodings (UTF-8) for international queries
+- Add debug information to stderr while keeping the main output clean in stdout for better pipeline integration
+- When using seaborn styles in matplotlib, use 'seaborn-v0_8' instead of 'seaborn' as the style name due to recent seaborn version changes
+- Use 'gpt-4o' as the model name for OpenAI's GPT-4 with vision capabilities
+- When searching for recent news, use the current year (2025) instead of previous years, or simply use the "recent" keyword to get the latest information
+- Use Gemini 3 Flash Preview model: `gemini-3-flash-preview` for the latest Gemini API (updated to Gemini 3 on 2025-12-26)
+- FastAPI project structure: use `backend/app/` for application code, separate `core/`, `models/`, `schemas/`, `api/`, `services/` directories
+- Use pydantic-settings for environment variable management with .env files
+- SQLAlchemy 2.0 async mode requires `asyncpg` driver and `create_async_engine`
+- FastAPI's `/docs` endpoint provides Swagger UI for API testing and debugging
+
+# Scratchpad
+
+## 当前任务：项目文档和文件整理
+
+### 任务说明
+整理项目的文档和文件，使之后的文档都整齐放置，便于维护和查找。
+
+### 整理方案
+1. 创建 `docs/` 文档中心目录
+2. 按类别组织文档（guides/architecture/reports）
+3. 移动测试脚本到 `tests/integration/`
+4. 移动工具脚本到 `scripts/`
+5. 更新所有文档链接
+6. 创建文档导航和组织说明
+
+### 进度
+[X] 1. 创建目录结构 - 完成
+[X] 2. 移动文档文件 - 完成
+[X] 3. 移动测试脚本 - 完成
+[X] 4. 移动工具脚本 - 完成
+[X] 5. 创建文档导航 (docs/README.md) - 完成
+[X] 6. 更新主 README.md - 完成
+[X] 7. 更新 backend/README.md - 完成
+[X] 8. 更新 frontend/README.md - 完成
+[X] 9. 创建项目组织说明文档 - 完成
+[X] 10. 创建 .gitignore 文件 - 完成
+[X] 11. 创建整理完成报告 - 完成
+
+✅ **任务完成！项目文档和文件已全部整理完毕！**
+
+### 新的目录结构
+```
+prdsherpa/
+├── docs/                       # 📚 文档中心
+│   ├── README.md               # 文档导航
+│   ├── ProductSpec             # 产品规格
+│   ├── guides/                 # 使用指南
+│   ├── architecture/           # 架构文档
+│   └── reports/                # 开发报告
+├── tests/                      # 测试代码
+│   └── integration/            # 集成测试
+├── scripts/                    # 工具脚本
+│   ├── test_all_apis.sh
+│   └── view_logs.sh
+├── tools/                      # 开发工具
+├── backend/                    # 后端代码
+├── frontend/                   # 前端代码
+├── uploads/                    # 上传文件
+├── logs/                       # 日志文件
+└── venv/                       # Python 虚拟环境
+```
+
+### 已完成的整理工作
+✅ 文档分类整理（guides/architecture/reports）
+✅ 测试脚本归档（tests/integration/）
+✅ 工具脚本归档（scripts/）
+✅ 创建文档导航中心（docs/README.md）
+✅ 更新所有 README 文档链接
+✅ 创建项目组织说明（PROJECT_ORGANIZATION.md）
+
+### 文档组织规范
+- **guides/** - 使用指南和操作文档
+- **architecture/** - 技术架构和设计文档
+- **reports/** - 阶段性开发报告和测试报告
+- **单一入口** - 所有文档通过 docs/README.md 导航
+- **相对链接** - 文档间使用相对路径链接
+
+---
+
+## 项目完成状态
+
+### 🎉 后端开发完成
+✅ 项目管理 (5 API)
+✅ 文件上传与 AI 分析 (4 API)
+✅ 知识库构建 (4 API)
+✅ 对话式需求撰写 (5 API)
+✅ PRD 导出 (2 API)
+**总计：20 个 API 端点全部完成并测试通过！**
+
+### 🎉 前端开发完成
+✅ React 18 + Vite + TypeScript
+✅ 项目管理、文件上传、知识库、对话、导出
+✅ 完整的用户界面和交互
+
+### 📚 文档完成
+✅ 所有功能文档
+✅ 测试报告
+✅ 项目组织规范

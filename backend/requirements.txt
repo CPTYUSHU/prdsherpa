@@ -1,0 +1,31 @@
+# FastAPI and ASGI server
+fastapi==0.115.5
+uvicorn[standard]==0.32.1
+python-multipart==0.0.18  # For file uploads
+
+# Pydantic settings for configuration
+pydantic==2.10.3
+pydantic-settings==2.6.1
+
+# Database (PostgreSQL with async support)
+sqlalchemy[asyncio]==2.0.36
+asyncpg==0.30.0
+alembic==1.14.0
+
+# PostgreSQL vector extension
+pgvector==0.3.6
+
+# Gemini API
+google-generativeai==0.8.3
+
+# Redis and Celery for background tasks
+redis==5.2.1
+celery==5.4.0
+
+# Utilities
+python-dotenv==1.0.1
+aiofiles==24.1.0  # For async file operations
+pillow==11.0.0  # For image processing
+pypdf==5.1.0  # For PDF parsing
+python-docx==1.1.2  # For Word document parsing
+
