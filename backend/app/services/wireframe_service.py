@@ -9,7 +9,9 @@ from sqlalchemy import select
 from backend.app.models.conversation import Conversation, Message
 from backend.app.models.knowledge_base import KnowledgeBase
 from backend.app.models.project import Project
+from backend.app.models.file import UploadedFile
 from backend.app.services.gemini_service import GeminiService
+import os
 
 logger = logging.getLogger(__name__)
 
@@ -24,7 +26,8 @@ class WireframeService:
         self,
         db: AsyncSession,
         conversation_id: UUID,
-        device_type: str = "mobile"
+        device_type: str = "mobile",
+        reference_file_ids: list[str] = None
     ) -> str:
         """
         Generate HTML/CSS wireframe from PRD conversation.
@@ -67,21 +70,54 @@ class WireframeService:
         )
         knowledge_base = kb_result.scalar_one_or_none()
 
+        # Get reference images if provided
+        reference_image_paths = []
+        if reference_file_ids:
+            logger.info(f"Processing {len(reference_file_ids)} reference files")
+            for file_id in reference_file_ids:
+                try:
+                    file_result = await db.execute(
+                        select(UploadedFile).where(UploadedFile.id == UUID(file_id))
+                    )
+                    uploaded_file = file_result.scalar_one_or_none()
+                    if uploaded_file and uploaded_file.file_type == "image":
+                        file_path = uploaded_file.file_path
+                        if os.path.exists(file_path):
+                            reference_image_paths.append(file_path)
+                            logger.info(f"Added reference image: {file_path}")
+                except Exception as e:
+                    logger.warning(f"Failed to load reference file {file_id}: {e}")
+
         # Build prompt
         prompt = self._build_wireframe_prompt(
             project=project,
             conversation=conversation,
             messages=messages,
             knowledge_base=knowledge_base,
-            device_type=device_type
+            device_type=device_type,
+            has_reference_images=len(reference_image_paths) > 0
         )
 
-        # Generate HTML with AI
-        html_content = await self.gemini_service.generate_text(
-            prompt=prompt,
-            temperature=0.3,  # Lower temperature for more structured output
-            max_tokens=12000
-        )
+        # Generate HTML with AI (with reference images if available)
+        if reference_image_paths:
+            logger.info(f"Generating wireframe with {len(reference_image_paths)} reference images")
+            # Use chat method with images for multimodal analysis
+            chat_messages = [
+                {"role": "user", "content": prompt}
+            ]
+            html_content = await self.gemini_service.chat(
+                messages=chat_messages,
+                image_paths=reference_image_paths,
+                temperature=0.3,
+                max_tokens=12000
+            )
+        else:
+            # No reference images, use regular text generation
+            html_content = await self.gemini_service.generate_text(
+                prompt=prompt,
+                temperature=0.3,
+                max_tokens=12000
+            )
 
         # Clean up the response (remove markdown code blocks if any)
         html_content = self._clean_html_response(html_content)
@@ -96,15 +132,16 @@ class WireframeService:
         conversation: Conversation,
         messages: list,
         knowledge_base: Optional[KnowledgeBase],
-        device_type: str
+        device_type: str,
+        has_reference_images: bool = False
     ) -> str:
         """Build the AI prompt for wireframe generation."""
 
         # Device specifications
         device_specs = {
-            "mobile": {"width": 375, "name": "移动端"},
-            "tablet": {"width": 768, "name": "平板"},
-            "desktop": {"width": 1200, "name": "桌面端"}
+            "mobile": {"width": 375, "name": "移动端（手机）"},
+            "tablet": {"width": 768, "name": "平板（iPad）"},
+            "desktop": {"width": 1200, "name": "桌面端（PC）"}
         }
         spec = device_specs.get(device_type, device_specs["mobile"])
 
@@ -116,7 +153,51 @@ class WireframeService:
         if knowledge_base:
             kb_text = self._format_knowledge_base(knowledge_base)
 
-        prompt = f"""你是一位专业的前端工程师和 UI 设计师，请根据以下 PRD 对话内容，生成**可视化的低保真线框图** HTML/CSS 代码。
+        # Base prompt with reference image support
+        reference_instruction = ""
+        if has_reference_images:
+            reference_instruction = """
+## 📸 参考截图说明
+我已经为你提供了现有系统/CMS平台的截图作为参考。
+
+**重要任务**：
+1. **仔细分析参考截图**：
+   - 整体布局结构（顶部导航、侧边栏、主内容区）
+   - UI 组件样式（按钮、输入框、表格、卡片）
+   - 配色方案和视觉风格
+   - 页面层次和信息架构
+   - 交互元素的位置和排列
+
+2. **模仿参考截图的设计**：
+   - 保持**相同的布局结构**（如果有侧边栏就保留侧边栏）
+   - 使用**相似的组件样式**（按钮形状、输入框样式、表格风格）
+   - 参考**相同的配色**（主色、辅色、背景色）
+   - 复制**类似的交互模式**（导航方式、操作按钮位置）
+
+3. **高保真原型**：
+   - 生成的原型应该**看起来像**参考截图的低保真版本
+   - 保留关键的视觉特征，让开发能清楚知道**在哪个位置开发新功能**
+   - 不要创建全新的设计，而是**基于现有界面扩展**
+
+4. **功能定位**：
+   - 明确指出新功能应该**添加在哪里**（例如："在左侧导航栏添加'会员管理'菜单项"）
+   - 使用注释标注：`<!-- 🔴 新功能：在此处添加XXX -->`
+   - 保持与现有界面的一致性
+
+**输出要求**：
+- 参考截图的整体布局和风格
+- 新功能与现有界面融合
+- 明确标注新功能的位置
+"""
+        else:
+            reference_instruction = """
+## ⚠️ 无参考截图
+由于没有提供现有系统的截图，请生成标准的低保真原型。
+"""
+
+        prompt = f"""你是一位专业的前端工程师和 UI 设计师，请根据以下 PRD 对话内容{'和提供的参考截图' if has_reference_images else ''}，生成**{'高保真' if has_reference_images else '低保真'}可视化线框图** HTML/CSS 代码。
+
+{reference_instruction}
 
 ⚠️ **重要提示**：
 - 你必须生成**带有真实 UI 控件的可视化界面**（输入框、按钮、卡片等）

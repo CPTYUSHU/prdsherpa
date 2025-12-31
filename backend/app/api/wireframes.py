@@ -27,6 +27,10 @@ class WireframeGenerateRequest(BaseModel):
         default="mobile",
         description="Device type: mobile, tablet, or desktop"
     )
+    reference_file_ids: list[str] = Field(
+        default_factory=list,
+        description="List of uploaded file IDs to use as UI reference (screenshots, existing designs)"
+    )
 
 
 class WireframeResponse(BaseModel):
@@ -79,7 +83,8 @@ async def generate_wireframe(
         html_content = await wireframe_service.generate_wireframe_html(
             db=db,
             conversation_id=conversation_id,
-            device_type=request.device_type
+            device_type=request.device_type,
+            reference_file_ids=request.reference_file_ids
         )
 
         # Return response

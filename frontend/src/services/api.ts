@@ -400,7 +400,8 @@ export const wireframeApi = {
   // 生成线框图
   generate: async (
     conversationId: string,
-    deviceType: 'mobile' | 'tablet' | 'desktop' = 'mobile'
+    deviceType: 'mobile' | 'tablet' | 'desktop' = 'mobile',
+    referenceFileIds: string[] = []
   ): Promise<{
     html_content: string;
     device_type: string;
@@ -408,7 +409,10 @@ export const wireframeApi = {
   }> => {
     const response = await api.post(
       `/api/conversations/${conversationId}/wireframe`,
-      { device_type: deviceType },
+      {
+        device_type: deviceType,
+        reference_file_ids: referenceFileIds
+      },
       {
         timeout: 60000, // 60秒超时，AI 生成线框图可能需要较长时间
       }

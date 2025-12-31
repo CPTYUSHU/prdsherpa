@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { Button, Space, message, Spin, Select } from 'antd';
+import { Button, Space, message, Spin, Select, Modal, Card, Image, Checkbox } from 'antd';
 import {
   DownloadOutlined,
   ArrowLeftOutlined,
@@ -8,10 +8,12 @@ import {
   MobileOutlined,
   TabletOutlined,
   DesktopOutlined,
+  FileImageOutlined,
 } from '@ant-design/icons';
-import { wireframeApi } from '../services/api';
+import { wireframeApi, filesApi } from '../services/api';
 import DOMPurify from 'dompurify';
 import html2canvas from 'html2canvas';
+import { UploadedFile } from '../types';
 
 const WireframePreview = () => {
   const { projectId, conversationId } = useParams<{ projectId: string; conversationId: string }>();
@@ -20,18 +22,39 @@ const WireframePreview = () => {
   const [loading, setLoading] = useState(false);
   const [deviceType, setDeviceType] = useState<'mobile' | 'tablet' | 'desktop'>('mobile');
   const [exporting, setExporting] = useState(false);
+  const [referenceFileIds, setReferenceFileIds] = useState<string[]>([]);
+  const [showReferenceModal, setShowReferenceModal] = useState(false);
+  const [availableFiles, setAvailableFiles] = useState<UploadedFile[]>([]);
+
+  useEffect(() => {
+    if (projectId) {
+      loadAvailableFiles();
+    }
+  }, [projectId]);
 
   useEffect(() => {
     if (conversationId) {
       loadWireframe();
     }
-  }, [conversationId, deviceType]);
+  }, [conversationId, deviceType, referenceFileIds]);
+
+  const loadAvailableFiles = async () => {
+    if (!projectId) return;
+    try {
+      const files = await filesApi.list(projectId);
+      // 只显示图片文件
+      const imageFiles = files.filter((f: UploadedFile) => f.file_type === 'image');
+      setAvailableFiles(imageFiles);
+    } catch (error) {
+      console.error('Failed to load files:', error);
+    }
+  };
 
   const loadWireframe = async () => {
     if (!conversationId) return;
     try {
       setLoading(true);
-      const data = await wireframeApi.generate(conversationId, deviceType);
+      const data = await wireframeApi.generate(conversationId, deviceType, referenceFileIds);
 
       // 使用 DOMPurify 清理 HTML，防止 XSS 攻击
       const cleanHtml = DOMPurify.sanitize(data.html_content, {
@@ -193,6 +216,13 @@ const WireframePreview = () => {
               </Select.Option>
             </Select>
 
+            <Button
+              onClick={() => setShowReferenceModal(true)}
+              icon={<FileImageOutlined />}
+            >
+              参考截图 {referenceFileIds.length > 0 && `(${referenceFileIds.length})`}
+            </Button>
+
             <Button onClick={handleRegenerate}>
               重新生成
             </Button>
@@ -258,15 +288,104 @@ const WireframePreview = () => {
       {htmlContent && (
         <div style={{
           padding: '12px 24px',
-          background: '#fff9e6',
-          borderTop: '1px solid #ffe58f',
+          background: referenceFileIds.length > 0 ? '#e6f7ff' : '#fff9e6',
+          borderTop: `1px solid ${referenceFileIds.length > 0 ? '#91d5ff' : '#ffe58f'}`,
           textAlign: 'center',
           fontSize: '12px',
           color: '#666'
         }}>
-          💡 提示：这是低保真线框图原型，仅用于展示功能布局和交互流程，不代表最终设计效果
+          {referenceFileIds.length > 0 ? (
+            <>
+              🎨 已使用 {referenceFileIds.length} 个参考截图生成高保真原型，保留了现有界面的设计风格
+            </>
+          ) : (
+            <>
+              💡 提示：这是低保真线框图原型，仅用于展示功能布局和交互流程，不代表最终设计效果
+              <br />
+              建议上传现有系统截图作为参考，生成更高保真的原型
+            </>
+          )}
         </div>
       )}
+
+      {/* 参考截图选择模态框 */}
+      <Modal
+        title="选择参考截图"
+        open={showReferenceModal}
+        onCancel={() => setShowReferenceModal(false)}
+        onOk={() => {
+          setShowReferenceModal(false);
+          message.success(`已选择 ${referenceFileIds.length} 个参考截图`);
+        }}
+        width={800}
+        okText="确定"
+        cancelText="取消"
+      >
+        <div style={{ marginBottom: '16px', padding: '12px', background: '#f5f5f5', borderRadius: '4px' }}>
+          <p style={{ margin: 0, fontSize: '13px', color: '#666' }}>
+            💡 <strong>选择参考截图的作用：</strong>
+          </p>
+          <ul style={{ margin: '8px 0 0', paddingLeft: '20px', fontSize: '12px', color: '#666' }}>
+            <li>AI 会分析参考截图的布局结构、组件样式和配色方案</li>
+            <li>生成的原型会模仿参考截图的设计风格，保持视觉一致性</li>
+            <li>明确标注新功能应该添加在界面的哪个位置</li>
+            <li>帮助开发人员快速定位功能开发的位置，减少理解成本</li>
+          </ul>
+        </div>
+
+        {availableFiles.length === 0 ? (
+          <div style={{ padding: '40px', textAlign: 'center', color: '#999' }}>
+            <FileImageOutlined style={{ fontSize: '48px', marginBottom: '16px' }} />
+            <p>暂无可用的图片文件</p>
+            <p style={{ fontSize: '12px' }}>
+              请先在项目中上传现有系统的截图（PNG、JPG 等格式）
+            </p>
+          </div>
+        ) : (
+          <div style={{ maxHeight: '500px', overflowY: 'auto' }}>
+            <Checkbox.Group
+              value={referenceFileIds}
+              onChange={(values) => setReferenceFileIds(values as string[])}
+              style={{ width: '100%' }}
+            >
+              <div style={{
+                display: 'grid',
+                gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))',
+                gap: '16px'
+              }}>
+                {availableFiles.map((file) => (
+                  <Card
+                    key={file.id}
+                    hoverable
+                    cover={
+                      <div style={{ height: '150px', overflow: 'hidden', background: '#f5f5f5' }}>
+                        <Image
+                          src={`http://localhost:8000/${file.file_path}`}
+                          alt={file.original_filename}
+                          style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                          preview={true}
+                        />
+                      </div>
+                    }
+                    bodyStyle={{ padding: '12px' }}
+                  >
+                    <Checkbox value={file.id} style={{ width: '100%' }}>
+                      <div style={{
+                        overflow: 'hidden',
+                        textOverflow: 'ellipsis',
+                        whiteSpace: 'nowrap',
+                        fontSize: '12px'
+                      }}>
+                        {file.original_filename}
+                      </div>
+                    </Checkbox>
+                  </Card>
+                ))}
+              </div>
+            </Checkbox.Group>
+          </div>
+        )}
+      </Modal>
     </div>
   );
 };
